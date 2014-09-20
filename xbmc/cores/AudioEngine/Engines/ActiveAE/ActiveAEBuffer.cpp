@@ -162,7 +162,11 @@ CActiveAEBufferPoolResample::CActiveAEBufferPoolResample(AEAudioFormat inputForm
     m_inputFormat.m_channelLayout += AE_CH_FC;
   }
   m_resampler = NULL;
+#ifdef HAS_LIBAMCODEC
+  m_fillPackets = true;
+#else
   m_fillPackets = false;
+#endif
   m_drain = false;
   m_empty = true;
   m_procSample = NULL;
