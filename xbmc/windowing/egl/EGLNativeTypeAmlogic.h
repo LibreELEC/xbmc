@@ -58,6 +58,8 @@ protected:
 private:
   void SetFramebufferResolution(const RESOLUTION_INFO &res) const;
   void SetFramebufferResolution(int width, int height) const;
+  void GetMaxResolution(RESOLUTION_INFO &maxResolution);
 
   std::string m_framebuffer_name;
+  RESOLUTION_INFO m_maxResolution;
 };

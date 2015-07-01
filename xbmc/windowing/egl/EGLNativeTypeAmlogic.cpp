@@ -64,7 +64,22 @@ void CEGLNativeTypeAmlogic::Initialize()
 {
   aml_permissions();
   DisableFreeScale();
+  GetMaxResolution(m_maxResolution);
 }
+
+void CEGLNativeTypeAmlogic::GetMaxResolution(RESOLUTION_INFO &maxResolution)
+{
+  std::vector<RESOLUTION_INFO> resolutions;
+  ProbeResolutions(resolutions);
+
+  maxResolution = {0};
+  for (size_t i = 0; i < resolutions.size(); i++)
+  {
+    if (resolutions[i].iScreenWidth > maxResolution.iScreenWidth || resolutions[i].iScreenHeight > maxResolution.iScreenHeight)
+      maxResolution = resolutions[i];
+  }
+}
+
 void CEGLNativeTypeAmlogic::Destroy()
 {
   return;
@@ -83,8 +98,8 @@ bool CEGLNativeTypeAmlogic::CreateNativeWindow()
   if (!nativeWindow)
     return false;
 
-  nativeWindow->width = 1920;
-  nativeWindow->height = 1080;
+  nativeWindow->width = m_maxResolution.iScreenWidth;
+  nativeWindow->height = m_maxResolution.iScreenHeight;
   m_nativeWindow = nativeWindow;
 
   SetFramebufferResolution(nativeWindow->width, nativeWindow->height);
@@ -244,8 +259,8 @@ void CEGLNativeTypeAmlogic::SetFramebufferResolution(int width, int height) cons
     {
       vinfo.xres = width;
       vinfo.yres = height;
-      vinfo.xres_virtual = 1920;
-      vinfo.yres_virtual = 2160;
+      vinfo.xres_virtual = m_maxResolution.iScreenWidth;
+      vinfo.yres_virtual = m_maxResolution.iScreenHeight * 2;
       vinfo.bits_per_pixel = 32;
       vinfo.activate = FB_ACTIVATE_ALL;
       ioctl(fd0, FBIOPUT_VSCREENINFO, &vinfo);
