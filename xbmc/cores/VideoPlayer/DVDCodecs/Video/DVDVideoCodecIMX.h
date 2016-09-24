@@ -187,7 +187,7 @@ private:
   int                            m_fbLineLength;
   int                            m_fbPageSize;
   int                            m_fbPhysSize;
-  int                            m_fbPhysAddr;
+  uint32_t                       m_fbPhysAddr;
   uint8_t                       *m_fbVirtAddr;
   struct fb_var_screeninfo       m_fbVar;
   int                            m_ipuHandle;

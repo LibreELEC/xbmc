@@ -182,7 +182,7 @@ public:
 public:
   uint32_t     iWidth;
   uint32_t     iHeight;
-  int          pPhysAddr;
+  uint32_t     pPhysAddr;
   uint8_t     *pVirtAddr;
   int          iFormat;
   double       m_fps;
