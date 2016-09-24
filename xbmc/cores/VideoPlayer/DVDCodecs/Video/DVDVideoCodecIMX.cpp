@@ -1562,15 +1562,15 @@ void CIMXContext::SetIPUMotion(EINTERLACEMETHOD imethod)
 void CIMXContext::Blit(CIMXBuffer *source_p, CIMXBuffer *source, const CRect &srcRect,
                        const CRect &dstRect, uint8_t fieldFmt, int page)
 {
-  static unsigned char pg;
+  static int pg = 0;
 
   if (page == RENDER_TASK_AUTOPAGE)
     page = pg;
-  else if (page < 0 && page >= m_fbPages)
+  else if (page < 0 || page >= m_fbPages)
     return;
 
   IPUTaskPtr ipu(new IPUTask(source_p, source, page));
-  pg = ++pg % m_fbPages;
+  pg = (page + 1) % m_fbPages;
 
 #ifdef IMX_PROFILE_BUFFERS
   unsigned long long before = XbmcThreads::SystemClockMillis();
