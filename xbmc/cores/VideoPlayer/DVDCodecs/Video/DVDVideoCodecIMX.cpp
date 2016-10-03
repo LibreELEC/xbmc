@@ -546,6 +546,8 @@ bool CIMXCodec::Open(CDVDStreamInfo &hints, CDVDCodecOptions &options, std::stri
 #endif
 
   m_warnOnce = true;
+  m_forcedWidthHeightRatio = m_hints.forced_aspect ? (65536 * m_hints.aspect) : 0;
+
   switch(m_hints.codec)
   {
   case AV_CODEC_ID_MPEG1VIDEO:
@@ -1160,7 +1162,9 @@ bool CIMXCodec::GetPicture(DVDVideoPicture* pDvdVideoPicture)
   pDvdVideoPicture->iWidth = pDvdVideoPicture->IMXBuffer->m_pctWidth;
   pDvdVideoPicture->iHeight = pDvdVideoPicture->IMXBuffer->m_pctHeight;
 
-  pDvdVideoPicture->iDisplayWidth = ((pDvdVideoPicture->iWidth * m_frameInfo.pExtInfo->nQ16ShiftWidthDivHeightRatio) + 32767) >> 16;
+  int ratio = m_forcedWidthHeightRatio ? m_forcedWidthHeightRatio : m_frameInfo.pExtInfo->nQ16ShiftWidthDivHeightRatio;
+
+  pDvdVideoPicture->iDisplayWidth = ((pDvdVideoPicture->iWidth * ratio) + 32767) >> 16;
   pDvdVideoPicture->iDisplayHeight = pDvdVideoPicture->iHeight;
 
   pDvdVideoPicture->pts = pDvdVideoPicture->IMXBuffer->GetPts();
