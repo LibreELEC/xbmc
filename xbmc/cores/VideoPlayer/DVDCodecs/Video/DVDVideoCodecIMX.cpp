@@ -506,8 +506,6 @@ bool CIMXCodec::Open(CDVDStreamInfo &hints, CDVDCodecOptions &options, std::stri
   }
 
   m_hints = hints;
-  if (g_advancedSettings.CanLogComponent(LOGVIDEO))
-    CLog::Log(LOGDEBUG, "Let's decode with iMX VPU\n");
 
   int param = 0;
   SetVPUParams(VPU_DEC_CONF_INPUTTYPE, &param);
@@ -516,32 +514,31 @@ bool CIMXCodec::Open(CDVDStreamInfo &hints, CDVDCodecOptions &options, std::stri
 #ifdef MEDIAINFO
   if (g_advancedSettings.CanLogComponent(LOGVIDEO))
   {
-    CLog::Log(LOGDEBUG, "Decode: MEDIAINFO: fpsrate %d / fpsscale %d\n", m_hints.fpsrate, m_hints.fpsscale);
-    CLog::Log(LOGDEBUG, "Decode: MEDIAINFO: CodecID %d \n", m_hints.codec);
-    CLog::Log(LOGDEBUG, "Decode: MEDIAINFO: StreamType %d \n", m_hints.type);
-    CLog::Log(LOGDEBUG, "Decode: MEDIAINFO: Level %d \n", m_hints.level);
-    CLog::Log(LOGDEBUG, "Decode: MEDIAINFO: Profile %d \n", m_hints.profile);
-    CLog::Log(LOGDEBUG, "Decode: MEDIAINFO: PTS_invalid %d \n", m_hints.ptsinvalid);
-    CLog::Log(LOGDEBUG, "Decode: MEDIAINFO: Tag %d \n", m_hints.codec_tag);
-    CLog::Log(LOGDEBUG, "Decode: MEDIAINFO: %dx%d \n", m_hints.width,  m_hints.height);
-  }
-  { char str_tag[128]; av_get_codec_tag_string(str_tag, sizeof(str_tag), m_hints.codec_tag);
-      CLog::Log(LOGDEBUG, "Decode: MEDIAINFO: Tag fourcc %s\n", str_tag);
-  }
-  if (m_hints.extrasize)
-  {
-    char buf[4096];
+    CLog::Log(LOGNOTICE, "MEDIAINFO: fpsrate %d / fpsscale %d\n", m_hints.fpsrate, m_hints.fpsscale);
+    CLog::Log(LOGNOTICE, "MEDIAINFO: CodecID %d\n", m_hints.codec);
+    CLog::Log(LOGNOTICE, "MEDIAINFO: StreamType %d\n", m_hints.type);
+    CLog::Log(LOGNOTICE, "MEDIAINFO: Level %d\n", m_hints.level);
+    CLog::Log(LOGNOTICE, "MEDIAINFO: Profile %d\n", m_hints.profile);
+    CLog::Log(LOGNOTICE, "MEDIAINFO: PTS_invalid %d\n", m_hints.ptsinvalid);
+    CLog::Log(LOGNOTICE, "MEDIAINFO: Tag %d\n", m_hints.codec_tag);
+    CLog::Log(LOGNOTICE, "MEDIAINFO: %dx%d\n", m_hints.width,  m_hints.height);
 
-    for (unsigned int i=0; i < m_hints.extrasize; i++)
-      sprintf(buf+i*2, "%02x", ((uint8_t*)m_hints.extradata)[i]);
+    char str_tag[128];
+    av_get_codec_tag_string(str_tag, sizeof(str_tag), m_hints.codec_tag);
+    CLog::Log(LOGNOTICE, "MEDIAINFO: Tag fourcc %s\n", str_tag);
 
-    if (g_advancedSettings.CanLogComponent(LOGVIDEO))
-      CLog::Log(LOGDEBUG, "Decode: MEDIAINFO: %s extradata %d %s\n", *(char*)m_hints.extradata == 1 ? "AnnexB" : "avcC", m_hints.extrasize, buf);
-  }
-  if (g_advancedSettings.CanLogComponent(LOGVIDEO))
-  {
-    CLog::Log(LOGDEBUG, "Decode: MEDIAINFO: %d / %d \n", m_hints.width,  m_hints.height);
-    CLog::Log(LOGDEBUG, "Decode: aspect %f - forced aspect %d\n", m_hints.aspect, m_hints.forced_aspect);
+    if (m_hints.extrasize)
+    {
+      char buf[4096];
+
+      for (unsigned int i=0; i < m_hints.extrasize; i++)
+        sprintf(buf+i*2, "%02x", ((uint8_t*)m_hints.extradata)[i]);
+
+      CLog::Log(LOGNOTICE, "MEDIAINFO: %s extradata %d %s\n", *(char*)m_hints.extradata == 1 ? "AnnexB" : "avcC", m_hints.extrasize, buf);
+    }
+
+    CLog::Log(LOGNOTICE, "MEDIAINFO: %d / %d\n", m_hints.width,  m_hints.height);
+    CLog::Log(LOGNOTICE, "MEDIAINFO: aspect %f - forced_aspect %d\n", m_hints.aspect, m_hints.forced_aspect);
   }
 #endif
 
@@ -633,6 +630,9 @@ bool CIMXCodec::Open(CDVDStreamInfo &hints, CDVDCodecOptions &options, std::stri
     CLog::Log(LOGERROR, "iMX VPU : codecid %d is not (yet) handled.\n", m_hints.codec);
     return false;
   }
+
+  if (g_advancedSettings.CanLogComponent(LOGVIDEO))
+    CLog::Log(LOGNOTICE, "Let's decode with iMX VPU\n");
 
   std::list<EINTERLACEMETHOD> deintMethods({ EINTERLACEMETHOD::VS_INTERLACEMETHOD_AUTO,
                                              EINTERLACEMETHOD::VS_INTERLACEMETHOD_RENDER_BOB });
