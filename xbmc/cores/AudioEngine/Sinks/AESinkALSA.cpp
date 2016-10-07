@@ -535,9 +535,9 @@ bool CAESinkALSA::Initialize(AEAudioFormat &format, std::string &device)
     m_passthrough   = false;
   }
 #if defined(HAS_LIBAMCODEC)
-  if (aml_present())
+  if (!m_passthrough && device.find("hdmi:CARD=AMLM8AUDIO") != std::string::npos)
   {
-    aml_set_audio_passthrough(m_passthrough);
+    device = "default";
   }
 #endif
 
