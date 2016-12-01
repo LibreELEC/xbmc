@@ -1370,7 +1370,7 @@ bool CMMALRenderer::CheckConfigurationDeint(uint32_t width, uint32_t height, uin
     m_deint_output->format->es->video.crop.height = height;
     m_deint_output->format->es->video.width = ALIGN_UP(width, 32);
     m_deint_output->format->es->video.height = ALIGN_UP(height, 16);
-    m_deint_output->format->encoding = advanced_deinterlace ? MMAL_ENCODING_YUVUV128 : MMAL_ENCODING_I420;
+    m_deint_output->format->encoding = advanced_deinterlace && encoding == MMAL_ENCODING_OPAQUE ? MMAL_ENCODING_YUVUV128 : MMAL_ENCODING_I420;
 
     status = mmal_port_format_commit(m_deint_output);
     if (status != MMAL_SUCCESS)
