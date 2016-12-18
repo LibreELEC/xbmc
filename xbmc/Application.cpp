@@ -2401,12 +2401,12 @@ void CApplication::OnApplicationMessage(ThreadMessage* pMsg)
   switch (pMsg->dwMessage)
   {
   case TMSG_POWERDOWN:
-    Stop(EXITCODE_POWERDOWN);
+    SetExitCode(EXITCODE_POWERDOWN);
     g_powerManager.Powerdown();
     break;
 
   case TMSG_QUIT:
-    Stop(EXITCODE_QUIT);
+    SetExitCode(EXITCODE_QUIT);
     break;
   
   case TMSG_SHUTDOWN:
@@ -2427,12 +2427,13 @@ void CApplication::OnApplicationMessage(ThreadMessage* pMsg)
 
   case TMSG_RESTART:
   case TMSG_RESET:
-    Stop(EXITCODE_REBOOT);
+    SetExitCode(EXITCODE_REBOOT);
     g_powerManager.Reboot();
     break;
 
   case TMSG_RESTARTAPP:
 #if defined(TARGET_WINDOWS) || defined(TARGET_LINUX)
+    SetExitCode(EXITCODE_RESTARTAPP);
     Stop(EXITCODE_RESTARTAPP);
 #endif
     break;
@@ -2859,6 +2860,13 @@ bool CApplication::Cleanup()
   }
 }
 
+void CApplication::SetExitCode(int exitCode)
+{
+  // save it for CEC
+  m_ExitCode = exitCode;
+  m_ExitCodeSet = true;
+}
+
 void CApplication::Stop(int exitCode)
 {
   try
@@ -2866,7 +2874,7 @@ void CApplication::Stop(int exitCode)
     m_frameMoveGuard.unlock();
 
     CVariant vExitCode(CVariant::VariantTypeObject);
-    vExitCode["exitcode"] = exitCode;
+    vExitCode["exitcode"] = m_ExitCode;
     CAnnouncementManager::GetInstance().Announce(System, "xbmc", "OnQuit", vExitCode);
 
     // Abort any active screensaver
@@ -2900,7 +2908,6 @@ void CApplication::Stop(int exitCode)
 
     m_bStop = true;
     m_AppFocused = false;
-    m_ExitCode = exitCode;
     CLog::Log(LOGNOTICE, "stop all");
 
     // cancel any jobs from the jobmanager
