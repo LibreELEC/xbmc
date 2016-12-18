@@ -4974,7 +4974,6 @@ bool CApplication::SwitchToFullScreen(bool force /* = false */)
 
 void CApplication::Minimize()
 {
-  g_Windowing.Minimize();
 }
 
 std::string CApplication::GetCurrentPlayer()
