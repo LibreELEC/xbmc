@@ -262,8 +262,8 @@ bool CUPowerSyscall::PumpPowerEvents(IPowerEventsCallback *callback)
 
 void CUPowerSyscall::UpdateCapabilities()
 {
-  m_CanSuspend   = CDBusUtil::GetVariant("org.freedesktop.UPower", "/org/freedesktop/UPower", "org.freedesktop.UPower", "CanSuspend").asBoolean(false);
-  m_CanHibernate = CDBusUtil::GetVariant("org.freedesktop.UPower", "/org/freedesktop/UPower", "org.freedesktop.UPower", "CanHibernate").asBoolean(false);
+  m_CanSuspend   = false;
+  m_CanHibernate = false; 
 }
 
 #endif
