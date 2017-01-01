@@ -79,23 +79,22 @@ public:
   lkFIFO() { m_size = queue.max_size(); queue.clear(); m_abort = false; }
 
 public:
-  T pop()
+  bool pop(T &item)
   {
     std::unique_lock<std::mutex> m_lock(lkqueue);
     m_abort = false;
     while (!queue.size() && !m_abort)
       read.wait(m_lock);
 
-    T val;
-    if (!queue.empty())
-    {
-      val = queue.front();
-      queue.pop_front();
-    }
+    if (queue.empty())
+      return false;
+
+    item = queue.front();
+    queue.pop_front();
 
     m_lock.unlock();
     write.notify_one();
-    return val;
+    return true;
   }
 
   bool push(const T& item)
@@ -109,6 +108,7 @@ public:
       return false;
 
     queue.push_back(item);
+
     m_lock.unlock();
     read.notify_one();
     return true;
