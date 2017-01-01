@@ -84,6 +84,13 @@ enum RENDER_TASK
   RENDER_TASK_CAPTURE  = -2,
 };
 
+enum VPU_MAPTYPE
+{
+  MAPTYPE_LINEAR_FRAME = 0,
+  MAPTYPE_TILED_FRAME  = 1,
+  MAPTYPE_TILED_FIELD  = 2,
+};
+
 #define CLASS_PICTURE   (VPU_DEC_OUTPUT_DIS     | VPU_DEC_OUTPUT_MOSAIC_DIS)
 #define CLASS_NOBUF     (VPU_DEC_OUTPUT_NODIS   | VPU_DEC_NO_ENOUGH_BUF | VPU_DEC_OUTPUT_REPEAT)
 #define CLASS_FORCEBUF  (VPU_DEC_OUTPUT_EOS     | VPU_DEC_NO_ENOUGH_INBUF)
@@ -244,7 +251,7 @@ class CDVDVideoCodecIMXBuffer : public CIMXBuffer
 friend class CIMXCodec;
 friend class CIMXContext;
 public:
-  CDVDVideoCodecIMXBuffer(VpuDecOutFrameInfo *frameInfo, double fps, int map);
+  CDVDVideoCodecIMXBuffer(VpuDecOutFrameInfo *frameInfo, double fps, int mapType);
   virtual ~CDVDVideoCodecIMXBuffer();
 
   // reference counting
