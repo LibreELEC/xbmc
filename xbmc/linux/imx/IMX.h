@@ -177,8 +177,6 @@ public:
   virtual void Lock() = 0;
   virtual long Release() = 0;
 
-  int          GetFormat()  { return iFormat; }
-
 public:
   uint32_t     iWidth;
   uint32_t     iHeight;

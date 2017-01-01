@@ -1128,7 +1128,9 @@ void CIMXCodec::ExitError(const char *msg, ...)
 
 bool CIMXCodec::GetPicture(DVDVideoPicture* pDvdVideoPicture)
 {
-  if (!m_decOutput.pop(pDvdVideoPicture->IMXBuffer))
+  CDVDVideoCodecIMXBuffer *pBuffer;
+
+  if (!m_decOutput.pop(pBuffer))
   {
     memset(pDvdVideoPicture, 0, sizeof(*pDvdVideoPicture));
     return false;
@@ -1139,9 +1141,9 @@ bool CIMXCodec::GetPicture(DVDVideoPicture* pDvdVideoPicture)
   unsigned int current;
 
   current = XbmcThreads::SystemClockMillis();
-  CLog::Log(LOGDEBUG, "+G 0x%x %f/%f tm:%03d : Interlaced 0x%x\n", pDvdVideoPicture->IMXBuffer->GetIdx(),
-                            recalcPts(pDvdVideoPicture->IMXBuffer->GetDts()), recalcPts(pDvdVideoPicture->IMXBuffer->GetPts()), current - previous,
-                            m_initInfo.nInterlace ? pDvdVideoPicture->IMXBuffer->GetFieldType() : 0);
+  CLog::Log(LOGDEBUG, "+G 0x%x %f/%f tm:%03d : Interlaced 0x%x\n", pBuffer->GetIdx(),
+                            recalcPts(pBuffer->GetDts()), recalcPts(pBuffer->GetPts()), current - previous,
+                            m_initInfo.nInterlace ? pBuffer->GetFieldType() : 0);
   previous = current;
 #endif
 
@@ -1151,35 +1153,37 @@ bool CIMXCodec::GetPicture(DVDVideoPicture* pDvdVideoPicture)
     ++m_dropped;
   }
   else
-    pDvdVideoPicture->iFlags = pDvdVideoPicture->IMXBuffer->GetFlags();
+    pDvdVideoPicture->iFlags = pBuffer->GetFlags();
 
   if (m_initInfo.nInterlace)
   {
-    if (pDvdVideoPicture->IMXBuffer->GetFieldType() == VPU_FIELD_NONE && m_warnOnce)
+    if (pBuffer->GetFieldType() == VPU_FIELD_NONE && m_warnOnce)
     {
       m_warnOnce = false;
       CLog::Log(LOGWARNING, "Interlaced content reported by VPU, but full frames detected - Please turn off deinterlacing manually.");
     }
-    else if (pDvdVideoPicture->IMXBuffer->GetFieldType() == VPU_FIELD_TB || pDvdVideoPicture->IMXBuffer->GetFieldType() == VPU_FIELD_TOP)
+    else if (pBuffer->GetFieldType() == VPU_FIELD_TB || pBuffer->GetFieldType() == VPU_FIELD_TOP)
       pDvdVideoPicture->iFlags |= DVP_FLAG_TOP_FIELD_FIRST;
 
     pDvdVideoPicture->iFlags |= DVP_FLAG_INTERLACED;
   }
 
   pDvdVideoPicture->format = RENDER_FMT_IMXMAP;
-  pDvdVideoPicture->iWidth = pDvdVideoPicture->IMXBuffer->m_pctWidth;
-  pDvdVideoPicture->iHeight = pDvdVideoPicture->IMXBuffer->m_pctHeight;
+  pDvdVideoPicture->iWidth = pBuffer->GetPictureWidth();
+  pDvdVideoPicture->iHeight = pBuffer->GetPictureHeight();
 
-  int ratio = m_forcedWidthHeightRatio ? m_forcedWidthHeightRatio : pDvdVideoPicture->IMXBuffer->m_widthHeightRatio;
+  int ratio = m_forcedWidthHeightRatio ? m_forcedWidthHeightRatio : pBuffer->GetWidthHeightRatio();
 
   pDvdVideoPicture->iDisplayWidth = ((pDvdVideoPicture->iWidth * ratio) + 32767) >> 16;
   pDvdVideoPicture->iDisplayHeight = pDvdVideoPicture->iHeight;
 
-  pDvdVideoPicture->pts = pDvdVideoPicture->IMXBuffer->GetPts();
-  pDvdVideoPicture->dts = pDvdVideoPicture->IMXBuffer->GetDts();
+  pDvdVideoPicture->pts = pBuffer->GetPts();
+  pDvdVideoPicture->dts = pBuffer->GetDts();
 
   if (pDvdVideoPicture->iFlags & DVP_FLAG_DROPPED)
-    SAFE_RELEASE(pDvdVideoPicture->IMXBuffer);
+    SAFE_RELEASE(pBuffer);
+
+  pDvdVideoPicture->IMXBuffer = pBuffer;
 
   return true;
 }
@@ -1229,15 +1233,17 @@ CDVDVideoCodecIMXBuffer::CDVDVideoCodecIMXBuffer(VpuDecOutFrameInfo *frameInfo, 
 
 void CDVDVideoCodecIMXBuffer::Lock()
 {
-  long count = ++m_iRefs;
 #ifdef TRACE_FRAMES
-  CLog::Log(LOGDEBUG, "R+ 0x%x  -  ref : %ld  (VPU)\n", m_idx, count);
+  CLog::Log(LOGDEBUG, "R+ 0x%x  -  ref : %ld  (VPU)\n", m_idx, ++m_iRefs);
+#else
+  ++m_iRefs;
 #endif
 }
 
 long CDVDVideoCodecIMXBuffer::Release()
 {
   long count = --m_iRefs;
+
 #ifdef TRACE_FRAMES
   CLog::Log(LOGDEBUG, "R- 0x%x  -  ref : %ld  (VPU)\n", m_idx, count);
 #endif
@@ -1803,7 +1809,7 @@ bool CIMXContext::TileTask(IPUTaskPtr &ipu)
       return false;
     }
 
-    ((CDVDVideoCodecIMXBuffer*)ipu->current)->m_convBuffer = conv;
+    ((CDVDVideoCodecIMXBuffer*)ipu->current)->SetConvBuffer(conv);
     vdoa.output.paddr = conv->buf_paddr;
   }
 
