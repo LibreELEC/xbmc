@@ -855,6 +855,7 @@ void CIMXCodec::AddExtraData(VpuBufferNode *bn, bool force)
 void CIMXCodec::Process()
 {
   VpuDecFrameLengthInfo         frameLengthInfo;
+  VpuDecOutFrameInfo            frameInfo;
   VpuBufferNode                 inData;
   VpuBufferNode                 dummy;
   VpuDecRetCode                 ret;
@@ -1002,16 +1003,16 @@ void CIMXCodec::Process()
         if (!VPU_DecGetConsumedFrameInfo(m_vpuHandle, &frameLengthInfo) && frameLengthInfo.pFrame)
           m_pts[frameLengthInfo.pFrame] = task->demux.pts;
 
-      if (m_decRet & CLASS_PICTURE && getOutputFrame(&m_frameInfo))
+      if (m_decRet & CLASS_PICTURE && getOutputFrame(&frameInfo))
       {
         ++m_nrOut;
-        CDVDVideoCodecIMXBuffer *buffer = new CDVDVideoCodecIMXBuffer(&m_frameInfo, m_fps, m_decOpenParam.nMapType);
+        CDVDVideoCodecIMXBuffer *buffer = new CDVDVideoCodecIMXBuffer(&frameInfo, m_fps, m_decOpenParam.nMapType);
 
         /* quick & dirty fix to get proper timestamping for VP8 codec */
         if (m_decOpenParam.CodecFormat == VPU_V_VP8)
           buffer->SetPts(task->demux.pts);
         else
-          buffer->SetPts(m_pts[m_frameInfo.pDisplayFrameBuf]);
+          buffer->SetPts(m_pts[frameInfo.pDisplayFrameBuf]);
 
         buffer->SetDts(task->demux.dts);
 
@@ -1162,7 +1163,7 @@ bool CIMXCodec::GetPicture(DVDVideoPicture* pDvdVideoPicture)
   pDvdVideoPicture->iWidth = pDvdVideoPicture->IMXBuffer->m_pctWidth;
   pDvdVideoPicture->iHeight = pDvdVideoPicture->IMXBuffer->m_pctHeight;
 
-  int ratio = m_forcedWidthHeightRatio ? m_forcedWidthHeightRatio : m_frameInfo.pExtInfo->nQ16ShiftWidthDivHeightRatio;
+  int ratio = m_forcedWidthHeightRatio ? m_forcedWidthHeightRatio : pDvdVideoPicture->IMXBuffer->m_widthHeightRatio;
 
   pDvdVideoPicture->iDisplayWidth = ((pDvdVideoPicture->iWidth * ratio) + 32767) >> 16;
   pDvdVideoPicture->iDisplayHeight = pDvdVideoPicture->iHeight;
@@ -1196,6 +1197,7 @@ CDVDVideoCodecIMXBuffer::CDVDVideoCodecIMXBuffer(VpuDecOutFrameInfo *frameInfo, 
 {
   m_pctWidth  = frameInfo->pExtInfo->FrmCropRect.nRight - frameInfo->pExtInfo->FrmCropRect.nLeft;
   m_pctHeight = frameInfo->pExtInfo->FrmCropRect.nBottom - frameInfo->pExtInfo->FrmCropRect.nTop;
+  m_widthHeightRatio = frameInfo->pExtInfo->nQ16ShiftWidthDivHeightRatio;
 
   // Some codecs (VC1?) lie about their frame size (mod 16). Adjust...
   iWidth      = (((frameInfo->pExtInfo->nFrmWidth) + 15) & ~15);

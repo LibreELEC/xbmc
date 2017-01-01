@@ -268,6 +268,7 @@ public:
 protected:
   unsigned int             m_pctWidth;
   unsigned int             m_pctHeight;
+  int                      m_widthHeightRatio;
 
 private:
   double                   m_pts;
@@ -374,7 +375,6 @@ protected:
   std::unordered_map<VpuFrameBuffer*,double>
                                m_pts;
   double                       m_lastPTS;
-  VpuDecOutFrameInfo           m_frameInfo;         // Store last VPU output frame info
   CBitstreamConverter         *m_converter;         // H264 annex B converter
   bool                         m_warnOnce;          // Track warning messages to only warn once
   int                          m_codecControlFlags;
