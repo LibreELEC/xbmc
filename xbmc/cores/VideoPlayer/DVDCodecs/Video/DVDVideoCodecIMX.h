@@ -149,33 +149,27 @@ public:
   static const int  m_fbPages;
 
 private:
-  struct IPUTask
+  struct IPUTask : public ipu_task
   {
-    IPUTask(CIMXBuffer *buffer_p, CIMXBuffer *buffer, int p = 0)
-      : previous(buffer_p), current(buffer), page(p)
+    IPUTask(CIMXBuffer *buffer_p, CIMXBuffer *buffer, int page)
+      : prevBuf(buffer_p), currBuf(buffer), targetPage(page)
     {
-      memset(&task, 0, sizeof(task));
+      memset(this, 0, sizeof(ipu_task));
     }
 
     // Kept for reference
-    CIMXBuffer *previous;
-    CIMXBuffer *current;
+    CIMXBuffer *prevBuf;
+    CIMXBuffer *currBuf;
 
-    // The actual task
-    struct ipu_task task;
-
-    unsigned int page;
-    int shift = true;
+    unsigned int targetPage;
   };
-
-  typedef std::shared_ptr<struct IPUTask> IPUTaskPtr;
 
   bool GetFBInfo(const std::string &fbdev, struct fb_var_screeninfo *fbVar);
 
-  void PrepareTask(IPUTaskPtr &ipu, CRect srcRect, CRect dstRect);
-  bool DoTask(IPUTaskPtr &ipu, CRect *dest = nullptr);
-  bool TileTask(IPUTaskPtr &ipu);
-  int  CheckTask(IPUTaskPtr &ipu);
+  void PrepareTask(IPUTask &task, CRect srcRect, CRect dstRect);
+  bool DoTask(IPUTask &task, CRect *dest = nullptr);
+  bool TileTask(IPUTask &task);
+  int  CheckTask(IPUTask &task);
 
   void SetFieldData(uint8_t fieldFmt, double fps);
 
