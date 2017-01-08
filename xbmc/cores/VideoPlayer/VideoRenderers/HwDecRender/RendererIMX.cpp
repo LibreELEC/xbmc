@@ -140,22 +140,20 @@ bool CRendererIMX::RenderUpdateVideoHook(bool clear, DWORD flags, DWORD alpha)
   CDVDVideoCodecIMXBuffer *buffer = static_cast<CDVDVideoCodecIMXBuffer*>(m_buffers[m_iYV12RenderBuffer].hwDec);
   if (buffer)
   {
-    if (buffer == m_bufHistory[0] && flagsPrev == flags)
+    if (m_bufHistory[0] != buffer)
+    {
+      buffer->Lock();
+      SAFE_RELEASE(m_bufHistory[1]);
+      m_bufHistory[1] = m_bufHistory[0];
+      m_bufHistory[0] = buffer;
+    }
+    else if (flagsPrev == flags)
     {
       g_IMX.WaitVsync();
       return true;
     }
 
     flagsPrev = flags;
-
-    buffer->Lock();
-
-    SAFE_RELEASE(m_bufHistory[1]);
-    m_bufHistory[1] = m_bufHistory[0];
-    m_bufHistory[0] = buffer;
-
-    if (!(flags & RENDER_FLAG_FIELDMASK))
-      SAFE_RELEASE(m_bufHistory[1]);
 
     // this hack is needed to get the 2D mode of a 3D movie going
     RENDER_STEREO_MODE stereo_mode = g_graphicsContext.GetStereoMode();
@@ -204,7 +202,7 @@ bool CRendererIMX::RenderUpdateVideoHook(bool clear, DWORD flags, DWORD alpha)
       }
     }
 
-    g_IMXContext.Blit(m_bufHistory[1], m_bufHistory[0], srcRect, dstRect, fieldFmt);
+    g_IMXContext.Blit(m_bufHistory[1], buffer, srcRect, dstRect, fieldFmt);
   }
 
 #if 0
