@@ -935,8 +935,14 @@ void CPeripheralCecAdapter::PushCecKeypress(const cec_keypress &key)
   case CEC_USER_CONTROL_CODE_POWER:
   case CEC_USER_CONTROL_CODE_POWER_TOGGLE_FUNCTION:
   case CEC_USER_CONTROL_CODE_POWER_OFF_FUNCTION:
-    xbmcKey.iButton = XINPUT_IR_REMOTE_POWER;
-    PushCecKeypress(xbmcKey);
+    // Instead of translating to XINPUT_IR_REMOTE_POWER key, we simulate
+    // CEC_OPCODE_STANDBY to avoid unconditional shutdown with some TVs.
+    {
+      cec_command command;
+      command.opcode = CEC_OPCODE_STANDBY;
+      command.initiator = CECDEVICE_TV;
+      CecCommand(this, &command);
+    }
     break;
   case CEC_USER_CONTROL_CODE_VOLUME_UP:
     xbmcKey.iButton = XINPUT_IR_REMOTE_VOLUME_PLUS;
