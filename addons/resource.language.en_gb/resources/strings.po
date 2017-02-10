@@ -16419,7 +16419,7 @@ msgstr ""
 
 #: system/peripherals.xml
 msgctxt "#36026"
-msgid "Devices to also put in standby mode"
+msgid "Switch off the TV when the PC goes to standby"
 msgstr ""
 
 #: xbmc/peripherals/devices/PeripheralCecAdapter.cpp
