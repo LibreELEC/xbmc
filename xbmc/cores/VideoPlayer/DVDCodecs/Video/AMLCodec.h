@@ -96,6 +96,7 @@ private:
   float            m_zoom;
   int              m_contrast;
   int              m_brightness;
+  RESOLUTION       m_video_res;
 
   static const unsigned int STATE_PREFILLED  = 1;
   static const unsigned int STATE_HASPTS     = 2;

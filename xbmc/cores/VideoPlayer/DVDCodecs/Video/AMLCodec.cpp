@@ -2209,6 +2209,13 @@ void CAMLCodec::SetVideoRect(const CRect &SrcRect, const CRect &DestRect)
     update = true;
   }
 
+  RESOLUTION video_res = g_graphicsContext.GetVideoResolution();
+  if (m_video_res != video_res)
+  {
+    m_video_res = video_res;
+    update = true;
+  }
+
   if (!update)
   {
     // mainvideo 'should' be showing already if we get here, make sure.
@@ -2222,7 +2229,8 @@ void CAMLCodec::SetVideoRect(const CRect &SrcRect, const CRect &DestRect)
 #ifdef TARGET_ANDROID
   display = m_display_rect;
 #else
-  display = gui;
+  const RESOLUTION_INFO& video_res_info = CDisplaySettings::GetInstance().GetResolutionInfo(video_res);
+  display = m_display_rect = CRect(0, 0, video_res_info.iScreenWidth, video_res_info.iScreenHeight);
 #endif
   if (gui != display)
   {
