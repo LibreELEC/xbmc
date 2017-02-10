@@ -424,7 +424,12 @@ bool CEGLNativeTypeIMX::ModeToResolution(std::string mode, RESOLUTION_INFO *res)
   res->iHeight= h;
   res->iScreenWidth = w;
   res->iScreenHeight= h;
-  res->fRefreshRate = r;
+  
+  if(r == 23 || (r % 10) == 9)
+    res->fRefreshRate = (float)((r + 1) * 1000) / 1001;
+  else
+    res->fRefreshRate = r;
+
   res->dwFlags = p[0] == 'p' ? D3DPRESENTFLAG_PROGRESSIVE : D3DPRESENTFLAG_INTERLACED;
 
   res->iScreen       = 0;
